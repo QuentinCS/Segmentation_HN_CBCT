@@ -8,16 +8,41 @@ import sys
 import itk
 import gzip
 import os
+import shutil as sh
+import dict_oar as dt
+import set_json
+
+# Function to get the key in the dictionnary using the value
+def get_key(d, val):
+    keys = [k for k, v in d.items() if v == val]
+    if keys:
+        return keys[0]
+    return None
 
 start_time = time.time()
 
 # Spacing for resampling
-spacing = 8.0
+spacing = 16.0
 newspacing = itk.Vector[itk.D, 3]()
 newspacing.Fill(spacing)
 
+if len(sys.argv) <= 1:
+    print("Error: Argument missing. Need one argument to name task \n")
+    exit()
+
+# Name task and create the differents folders 
+Task_name = sys.argv[1]
+image_train_dir = Task_name + "/imagesTr/"
+label_train_dir = Task_name + "/labelsTr/"
+
+if os.path.exists(Task_name):
+    sh.rmtree(Task_name)
+os.makedirs(Task_name)
+os.makedirs(image_train_dir)
+os.makedirs(label_train_dir)
+
 Folder = []
-with open("list", "r") as file1:
+with open("Data_set_file", "r") as file1:
     ligne = file1.readline()
     while ligne != "":
         Folder.append(ligne)
@@ -34,63 +59,54 @@ for i in range(0, len(folder)):
     
     # Resampling of image 
     image_itk = itk.imread(folder[i]+"/CT.nii") 
-    #image_resize = gt.applyTransformation(input=image_itk, like=image_ref , force_resample=True, adaptive=True)
-    #image_ref = gt.applyTransformation(input=image_itk, newspacing=newspacing, force_resample=True, adaptive=True, interpolation_mode='linear')
     image_ref = gt.applyTransformation(input=image_itk, newspacing=newspacing, force_resample=True, adaptive=True, interpolation_mode='linear', pad=-1024.0)
-    itk.imwrite(image_ref, "../imagesTr/" + new_name)
+    itk.imwrite(image_ref, image_train_dir + "/" + new_name)
 
     # gzip image if begin image is not .gz
-    with open("../imagesTr/" + new_name, 'rb') as src, gzip.open("../imagesTr/" + new_name + '.gz', 'wb') as dst:
+    with open( image_train_dir + "/" + new_name, 'rb') as src, gzip.open(image_train_dir + "/" + new_name + '.gz', 'wb') as dst:
         dst.writelines(src)
-    os.remove("../imagesTr/" + new_name)
-
+    os.remove(image_train_dir + "/" + new_name)
 
     # Get background to sum
-    imageBck = itk.imread(folder[i]+"/0_Patient")
+    imageBck = itk.imread(folder[i]+"/Patient.nii")
     imageBck_np = gt.applyTransformation(input=imageBck, like=image_ref, force_resample=True, interpolation_mode='NN')
-    #imageBck_np = gt.applyTransformation(input=imageBck, like=image_ref, force_resample=True, interpolation_mode='NN', pad=1.0)
     mask_oar = itk.array_view_from_image(imageBck_np)
+   
+    file_list = []
+    # Travel through directory to get file list 
+    for dirName, subdirList, fileList in os.walk(folder[i]):
+        print(fileList)
+        
+    for j in range(0, len(fileList)):
+        for value in dt.OAR.keys():
+            if fileList[j] in (value + ".nii") and fileList[j] != 'Patient.nii':
+                image = itk.imread(folder[i] + "/" + str(fileList[j]))
+                image_rescale = gt.applyTransformation(input=image, like=image_ref, force_resample=True, interpolation_mode='NN')
+                image_np = itk.array_view_from_image(image_rescale)
+                #print("Value :", value)
+                #print("Val :", dt.Label[value])
+                image_np *= dt.Label[value] 
+                mask_oar += image_np
 
-    #Get the OARs, scale up, resize and sum
-    image1 = itk.imread(folder[i]+"/1_Parotide_D")
-    image2 = itk.imread(folder[i]+"/2_Parotide_G")
-    image3 = itk.imread(folder[i]+"/3_Larynx")
-    image4 = itk.imread(folder[i]+"/4_Tronc_Cerebral")
-
-    # Resize to CT size and newspacing
-    image_1S = gt.applyTransformation(input=image1, like=image_ref, force_resample=True, interpolation_mode='NN')
-    image_2S = gt.applyTransformation(input=image2, like=image_ref, force_resample=True, interpolation_mode='NN')
-    image_3S = gt.applyTransformation(input=image3, like=image_ref, force_resample=True, interpolation_mode='NN')
-    image_4S = gt.applyTransformation(input=image4, like=image_ref, force_resample=True, interpolation_mode='NN')
-    #image_1S = gt.applyTransformation(input=image1, like=image_ref, force_resample=True, interpolation_mode='NN', pad=1.0)
-    #image_2S = gt.applyTransformation(input=image2, like=image_ref, force_resample=True, interpolation_mode='NN', pad=1.0)
-    #image_3S = gt.applyTransformation(input=image3, like=image_ref, force_resample=True, interpolation_mode='NN', pad=1.0)
-    #image_4S = gt.applyTransformation(input=image4, like=image_ref, force_resample=True, interpolation_mode='NN', pad=1.0)
-    
-    image1_np = itk.array_view_from_image(image_1S)
-    image2_np = itk.array_view_from_image(image_2S)
-    image3_np = itk.array_view_from_image(image_3S)
-    image4_np = itk.array_view_from_image(image_4S)
-
-    # Scale up to label
-    image1_np *= 1
-    image2_np *= 2
-    image3_np *= 3
-    image4_np *= 4
-
-    # Adding labels  
-    Mask_oar = mask_oar + image1_np  + image2_np  + image3_np + image4_np
 
     # Save result
     oar_name = "CTHN_" + folder[i][9] + folder[i][10] + folder[i][11] + ".nii" 
-    save = itk.image_from_array(Mask_oar)
+    save = itk.image_from_array(mask_oar)
     save.CopyInformation(image_ref) # Important to save the image with correct spacing, size!!
-    itk.imwrite(save, "../labelsTr/" + oar_name)
+    itk.imwrite(save, label_train_dir + "/" + oar_name)
 
     # gzip image if begin image is not .gz
-    with open("../labelsTr/" + oar_name, 'rb') as src, gzip.open("../labelsTr/" + oar_name + '.gz', 'wb') as dst:
+    with open(label_train_dir + "/" + oar_name, 'rb') as src, gzip.open(label_train_dir + "/" + oar_name + '.gz', 'wb') as dst:
             dst.writelines(src)
-    os.remove("../labelsTr/" + oar_name)
+    os.remove(label_train_dir + "/" + oar_name)
+    
+
+# Create json file
+
+set_json.generate_dataset_json(output_file=Task_name + '/dataset.json', imagesTr_dir=image_train_dir, imagesTs_dir=None, modalities=set_json.modality,
+                          labels=set_json.dict_oar, dataset_name=Task_name, license="hands off!", dataset_description="Head and neck CT",
+                          dataset_reference="", dataset_release='0.0')
+
 
 duree = time.time() - start_time
 print ('\nTotal running time : %5.3g s' % duree)

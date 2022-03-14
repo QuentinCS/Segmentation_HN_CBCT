@@ -16,6 +16,7 @@
 from typing import Tuple
 import numpy as np
 from batchgenerators.utilities.file_and_folder_operations import *
+import dict_oar as dt
 
 
 def get_identifiers_from_splitted_files(folder: str):
@@ -74,19 +75,12 @@ def generate_dataset_json(output_file: str, imagesTr_dir: str, imagesTs_dir: str
     save_json(json_dict, os.path.join(output_file))
 
 
-oar = []
-with open("list_oar", "r") as file1:
-    ligne = file1.readline()
-    while ligne != "":
-        #print(ligne)
-        oar.append(ligne)
-        ligne = file1.readline()
+organs = []
+for key, value in dt.Label.items():
+    organs.append(key)
 
-Oar = []
-for i in oar:
-    Oar.append(i.strip())
-dict_oar = {i : Oar[i] for i in range(0, len(Oar))}
-
+dict_oar = {i : organs[i] for i in range(0, len(organs))}
+print(dict_oar)
 modalities = ('CT',)
 
 generate_dataset_json(output_file='dataset.json', imagesTr_dir='imagesTr/', imagesTs_dir=None, modalities=modalities, 
