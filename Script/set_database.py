@@ -25,13 +25,16 @@ if len(sys.argv) <= 1:
     print("Error: Argument missing. Need one argument to name task \n")
     exit()
 
+# Variables
 directory = 0
 list1 =[]
 list_name =[]
 directory_name = []
+nb_image = 0
+n_missing = 0
 nb_oar = np.zeros(len(dt.Label)-1)
 
-# By default don't draw oar frequency 
+# By default don't print oar frequency 
 plot_oar = False
 if len(sys.argv) > 2:
     plot_oar = True
@@ -74,8 +77,7 @@ for i in range(len(list_name)):
             list_name[i][j] = list_name[i][j].replace(dt.list_remove[a], '')
 
 # Loop to looking on the different files (CT.nii, OARs, ...) and save it in a new folder  
-print("Number of images : ", len(list1))
-nb_image = 0
+print("Number of images : ", len(list1), "\n")
 for i in range(len(list1)):
 
     # Get CT file and save it in the folder imagesTr/
@@ -83,12 +85,6 @@ for i in range(len(list1)):
         # Resampling of image 
         image_itk = itk.imread(directory_name[i]+"/CT.nii")
         image_ref = gt.applyTransformation(input=image_itk, newspacing=newspacing, force_resample=True, adaptive=True, interpolation_mode='linear', pad=-1024.0)
-        itk.imwrite(image_ref, image_train_dir + "CTHN_%.3i_0000.nii"%(i))
-    
-        # gzip image if begin image is not .gz
-        with open(image_train_dir + "CTHN_%.3i_0000.nii"%(i), 'rb') as src, gzip.open(image_train_dir + "CTHN_%.3i_0000.nii.gz"%(i), 'wb') as dst:
-            dst.writelines(src)
-        os.remove(image_train_dir + "CTHN_%.3i_0000.nii"%(i))
     else:
         print("Error: missing CT.nii file")
         break
@@ -103,10 +99,13 @@ for i in range(len(list1)):
             imageBck_np = gt.applyTransformation(input=imageBck, like=image_ref, force_resample=True, interpolation_mode='NN')
             mask_oar = itk.array_view_from_image(imageBck_np)
             patient = True
-            nb_oar[0] += 1 
+            nb_oar[0] += 1
+            #print("patient")
     
+    # If no patient label doesn't add image 
     if patient == False:
-        print("Missing file Patient.nii.")
+        #print("Missing file Patient.nii.")
+        n_missing += 1
         continue
 
     OAR = []
@@ -123,6 +122,14 @@ for i in range(len(list1)):
                 OAR.append(key) # To avoid multi label for same OAR
                 nb_oar[dt.Label[key]-1] += 1 
 
+    # Save CT file 
+    itk.imwrite(image_ref, image_train_dir + "CTHN_%.3i_0000.nii"%(i))
+    # gzip image if begin image is not .gz
+    with open(image_train_dir + "CTHN_%.3i_0000.nii"%(i), 'rb') as src, gzip.open(image_train_dir + "CTHN_%.3i_0000.nii.gz"%(i), 'wb') as dst:
+        dst.writelines(src)
+    os.remove(image_train_dir + "CTHN_%.3i_0000.nii"%(i))
+
+
     # Save the OARs summed in folder labelTr/ 
     oar_name = "CTHN_%.3i"%(i) + ".nii"
     save = itk.image_from_array(mask_oar)
@@ -134,6 +141,12 @@ for i in range(len(list1)):
         dst.writelines(src)
     os.remove(label_train_dir + "/" + oar_name)
 
+    if i%5 == False:
+            print(i)
+
+
+print("\nPatient label missing: %i, images removed"%(n_missing))
+
 # Create json file
 create_json.generate_dataset_json(output_file=Task_name + '/dataset.json', imagesTr_dir=image_train_dir, imagesTs_dir=None, modalities=create_json.modalities,
                           labels=create_json.dict_oar, dataset_name=Task_name, license="hands off!", dataset_description="Head and neck CT",
@@ -141,10 +154,13 @@ create_json.generate_dataset_json(output_file=Task_name + '/dataset.json', image
 
 
 # Draw bar plot of OAR frequency 
+fig = plt.figure(figsize=(20,10))
+plt.bar(dt.OAR.keys(), nb_oar)
+plt.title("Organs-at-risks label frequency in images")
+plt.ylabel("Nb of labels (-)")
+fig.savefig("oar_frequency.pdf")
+
 if plot_oar == True:
-    fig = plt.figure(figsize=(20,10))
-    plt.bar(dt.OAR.keys(), nb_oar)
-    plt.title("Organs-at-risks label frequency in images")
     plt.show()
 
 duree = time.time() - start_time
