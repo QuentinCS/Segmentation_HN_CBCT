@@ -33,6 +33,7 @@ directory_name = []
 nb_image = 0
 n_missing = 0
 nb_oar = np.zeros(len(dt.Label)-1)
+n_oar = len(dt.Label)
 
 # By default don't print oar frequency 
 plot_oar = False
@@ -120,7 +121,20 @@ for i in range(len(list1)):
                 image_np *= dt.Label[key]
                 mask_oar += image_np
                 OAR.append(key) # To avoid multi label for same OAR
-                nb_oar[dt.Label[key]-1] += 1 
+                nb_oar[dt.Label[key]] += 1 
+                # Check fo OARs overlay, if overlays, set pixel value as the last OARS
+                if np.max(mask_oar) > n_oar:
+                    for slices in range(0, mask_oar.shape[0]):
+                        for row in range(0, mask_oar.shape[1]):
+                            for cell in range(0, mask_oar.shape[2]):
+                                if mask_oar[slices][row][cell] > n_oar:
+                                    mask_oar[slices][row][cell] = dt.Label[key]+1
+
+    # Check overlay of OARs
+    if np.max(mask_oar) > n_oar:
+        print("Error: OAR overlay. See %s "%(directory_name[i]))
+        #break
+
 
     # Save CT file 
     itk.imwrite(image_ref, image_train_dir + "CTHN_%.3i_0000.nii"%(i))
