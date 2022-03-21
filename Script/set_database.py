@@ -1,6 +1,7 @@
 # Script to set the database in the format required by nnUNet: https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/dataset_conversion.md
 # Need one argument : the Task name, a second argument (no matter what) will draw the oar frequency 
 # Run in folder with the patient folders and create a folder with argv[1] name (the task name) for save images and labels 
+# Avoid overlapp of labels
 # Functionnal
 
 import gatetools as gt
@@ -119,22 +120,18 @@ for i in range(len(list1)):
                 image_rescale = gt.applyTransformation(input=image, like=image_ref, force_resample=True, interpolation_mode='NN')
                 image_np = itk.array_view_from_image(image_rescale)
                 image_np *= dt.Label[key]
-                mask_oar += image_np
-                OAR.append(key) # To avoid multi label for same OAR
-                nb_oar[dt.Label[key]] += 1 
+                
                 # Check fo OARs overlay, if overlays, set pixel value as the last OARS
-                if np.max(mask_oar) > n_oar:
+                if np.mean(mask_oar*image_np) != 0:
                     for slices in range(0, mask_oar.shape[0]):
                         for row in range(0, mask_oar.shape[1]):
                             for cell in range(0, mask_oar.shape[2]):
-                                if mask_oar[slices][row][cell] > n_oar:
-                                    mask_oar[slices][row][cell] = dt.Label[key]+1
-
-    # Check overlay of OARs
-    if np.max(mask_oar) > n_oar:
-        print("Error: OAR overlay. See %s "%(directory_name[i]))
-        #break
-
+                                if (mask_oar[slices][row][cell]*image_np[slices][row][cell]) != 0:
+                                    mask_oar[slices][row][cell] = image_np[slices][row][cell]+1
+                else:
+                    mask_oar += image_np
+                OAR.append(key) # To avoid multi label for same OAR
+                nb_oar[dt.Label[key]] += 1 
 
     # Save CT file 
     itk.imwrite(image_ref, image_train_dir + "CTHN_%.3i_0000.nii"%(i))
