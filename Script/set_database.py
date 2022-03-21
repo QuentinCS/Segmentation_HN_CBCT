@@ -121,17 +121,12 @@ for i in range(len(list1)):
                 image_np = itk.array_view_from_image(image_rescale)
                 image_np *= dt.Label[key]
                 
-                # Check fo OARs overlay, if overlays, set pixel value as the last OARS
-                if np.mean(mask_oar*image_np) != 0:
-                    for slices in range(0, mask_oar.shape[0]):
-                        for row in range(0, mask_oar.shape[1]):
-                            for cell in range(0, mask_oar.shape[2]):
-                                if (mask_oar[slices][row][cell]*image_np[slices][row][cell]) != 0:
-                                    mask_oar[slices][row][cell] = image_np[slices][row][cell]+1
-                else:
-                    mask_oar += image_np
+                # Replacing pixel values by mask oar avoid overlapp
+                mask = image_np>0
+                mask_oar[mask] = dt.Label[key]
+
                 OAR.append(key) # To avoid multi label for same OAR
-                nb_oar[dt.Label[key]] += 1 
+                nb_oar[dt.Label[key]-1] += 1 
 
     # Save CT file 
     itk.imwrite(image_ref, image_train_dir + "CTHN_%.3i_0000.nii"%(i))
