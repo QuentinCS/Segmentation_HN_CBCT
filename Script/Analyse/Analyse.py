@@ -105,7 +105,7 @@ print("-------------------------------------------------------")
 
 
 # Boxplots for Dice and Hausdorff 
-fig = plt.figure(figsize=(20,12))
+fig = plt.figure(figsize=(20,10))
 plt.subplot(1, 2, 1)
 plt.boxplot(Dice, labels=list_organs)
 plt.title('Dice similarity coefficient')
@@ -121,6 +121,23 @@ plt.ylabel('HD95 (mm)')
 plt.ylim(0)
 plt.show()
 fig.savefig("DSC_HD.pdf")
+
+
+save = open("Results.txt", "w")
+save.write("Number of images : %s\n"%(Nb_images))
+save.write("List of organs : %s\n"%(list_organs))
+save.write("\nDice : \n")
+for i in range(len(Dice_raw)):
+	for j in range(len(Dice_raw[i])):
+		save.write("%10.10s  "%(Dice_raw[i][j]))
+	save.write("\n")
+save.write("\n \nHausdorff : \n")
+for i in range(len(Hausdorff_raw)):
+	for j in range(len(Hausdorff_raw[i])):
+		save.write("%10.10s  "%(Hausdorff_raw[i][j]))
+	save.write("\n")
+save.close()
+
 
 
 duree = time.time() - start_time

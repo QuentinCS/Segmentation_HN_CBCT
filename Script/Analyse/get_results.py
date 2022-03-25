@@ -44,14 +44,14 @@ start_time = time.time()
 list_roi = []
 directory_name = []
 # Travel through directory to get file list 
-roiDir = 'Labels'
+roiDir = 'Labels2'
 for dirName, subdirList, fileList in os.walk(roiDir):
     list_roi.append(fileList)
     directory_name.append(dirName)
-directory_name.remove('Labels')
+directory_name.remove('Labels2')
 
 image_predict = []
-predictDir = 'Predictions'
+predictDir = 'Predictions2'
 for dirName, subdirList, fileList in os.walk(predictDir):
     list_predict = fileList
 list_predict.remove('plans.pkl')
@@ -87,26 +87,29 @@ for i in range(len(directory_name)):
 	Dict_hausdorff = {}
 	for key, value in dt.Organs_dict.items():
 		roi_name = directory_name[i] + '/roi_' + key + '.mhd'
-		#print(roi_name)
+		print(roi_name)
 		if os.path.isfile(roi_name):
 			image_roi_itk = itk.imread(roi_name)
 			image_pred1 = itk.array_from_image(image_predict)
 			image_pred = image_pred1.copy()
 			image_pred.fill(0)
 			mask = image_pred1==dt.Label[dt.Organs_dict[key]]
-			image_pred[mask] = dt.Label[dt.Organs_dict[key]]
-			image_pred_itk = itk.image_from_array(image_pred)
+			image_pred[mask] = 1
+			image_pred_itk1 = itk.image_from_array(image_pred)
+			image_pred_itk = gt.applyTransformation(input=image_pred_itk1, like=image_roi_itk) # Reset to the correct origin 			
+			itk.imwrite(image_pred_itk,  "Test.nii" )			
+
+			if np.mean(image_pred_itk1) > 0:
+				# Dice coefficient 
+				Dice = dice(image_roi_itk, image_pred)
+				Dict_dice[dt.Organs_dict[key]] = Dice
 			
-			# Dice coefficient 
-			Dice = dice(image_roi_itk, image_pred)
-			Dict_dice[dt.Organs_dict[key]] = Dice
+				# Hausdorff
+				Hausdorff = gt.computeHausdorff(image_roi_itk, image_pred_itk, 0.95)
+				Dict_hausdorff[dt.Organs_dict[key]] = Hausdorff
 			
-			# Hausdorff
-			Hausdorff = gt.computeHausdorff(image_roi_itk, image_pred_itk, 0.95)
-			Dict_hausdorff[dt.Organs_dict[key]] = Hausdorff
-			
-			if dt.Organs_dict[key] not in OAR and os.path.isfile(roi_name):
-				OAR.append(dt.Organs_dict[key])
+				if dt.Organs_dict[key] not in OAR and os.path.isfile(roi_name):
+					OAR.append(dt.Organs_dict[key])
 	
 	# Put data in Dictionaries	
 	Data['Image%s'%(i)]['Organs'] = OAR
