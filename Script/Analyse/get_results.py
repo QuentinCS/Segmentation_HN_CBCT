@@ -44,14 +44,14 @@ start_time = time.time()
 list_roi = []
 directory_name = []
 # Travel through directory to get file list 
-roiDir = 'Labels2'
+roiDir = 'Labels'
 for dirName, subdirList, fileList in os.walk(roiDir):
     list_roi.append(fileList)
     directory_name.append(dirName)
-directory_name.remove('Labels2')
+directory_name.remove('Labels')
 
 image_predict = []
-predictDir = 'Predictions2'
+predictDir = 'Predictions'
 for dirName, subdirList, fileList in os.walk(predictDir):
     list_predict = fileList
 list_predict.remove('plans.pkl')
@@ -70,6 +70,7 @@ image.sort()
 list_predict.sort()
 
 print('Organs :', Organs)
+#print(directory_name)
 
 # Dictionary for store the data 
 Data = {'Number of images': len(image), 'List images': image, 'List Organs': Organs}
@@ -87,7 +88,7 @@ for i in range(len(directory_name)):
 	Dict_hausdorff = {}
 	for key, value in dt.Organs_dict.items():
 		roi_name = directory_name[i] + '/roi_' + key + '.mhd'
-		print(roi_name)
+		#print(roi_name)
 		if os.path.isfile(roi_name):
 			image_roi_itk = itk.imread(roi_name)
 			image_pred1 = itk.array_from_image(image_predict)

@@ -131,13 +131,26 @@ for i in range(len(Dice_raw)):
 	for j in range(len(Dice_raw[i])):
 		save.write("%10.10s  "%(Dice_raw[i][j]))
 	save.write("\n")
+save.write("Mean : \n")
+for i in range(len(Stats[0])):
+	save.write("%10.10s  "%(Stats[0][i]))
+save.write("\nStd : \n")
+for i in range(len(Stats[1])):
+	save.write("%10.10s  "%(Stats[1][i]))
+
+
 save.write("\n \nHausdorff : \n")
 for i in range(len(Hausdorff_raw)):
 	for j in range(len(Hausdorff_raw[i])):
 		save.write("%10.10s  "%(Hausdorff_raw[i][j]))
 	save.write("\n")
+save.write("Mean : \n")
+for i in range(len(Stats[2])):
+	save.write("%10.10s  "%(Stats[2][i]))
+save.write("\nStd : \n")
+for i in range(len(Stats[3])):
+	save.write("%10.10s  "%(Stats[3][i]))
 save.close()
-
 
 
 duree = time.time() - start_time
