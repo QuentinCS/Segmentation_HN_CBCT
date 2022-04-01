@@ -60,16 +60,14 @@ for i in range(len(fileList)):
 	if i%5 == False:
 		print(i)
 
-
-
 # Save result to json 
 with open("result.json", 'w') as outfile:
 	json.dump(Volume, outfile, indent=4)
 
-
 list_organs = []
-for key, value in dt.OAR.items():
-	list_organs.append(key)
+for key, value in dt.Label.items():
+	if key != 'Background':
+		list_organs.append(key)
 
 Vol_raw = np.zeros((len(fileList), len(list_organs)))
 Vol = []
@@ -85,7 +83,6 @@ for oar in range(0, len(list_organs)):
 			a.append(Vol_raw[i][oar])					
 	Vol.append(a)
 
-
 # Plot histogramms for each OAR
 fig=plt.figure(figsize=(20, 15))
 for oar in range(1, n_oar):
@@ -99,7 +96,6 @@ for oar in range(1, n_oar):
 	plt.legend()
 plt.show()
 fig.savefig('Volume_oar.pdf')
-
 
 duree = time.time() - start_time
 print ('\nTotal running time : %5.3g s' % duree)

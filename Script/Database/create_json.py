@@ -59,7 +59,7 @@ def generate_dataset_json(output_file: str, imagesTr_dir: str, imagesTs_dir: str
     json_dict['licence'] = license
     json_dict['release'] = dataset_release
     json_dict['modality'] = {str(i): modalities[i] for i in range(len(modalities))}
-    json_dict['labels'] = {str(i): labels[i] for i in labels.keys()}
+    json_dict['labels'] = {int(i): labels[i] for i in labels.keys()}
 
     json_dict['numTraining'] = len(train_identifiers)
     json_dict['numTest'] = len(test_identifiers)
