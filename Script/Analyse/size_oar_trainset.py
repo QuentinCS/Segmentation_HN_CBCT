@@ -19,24 +19,21 @@ import json
 
 start_time = time.time()
 
+if len(sys.argv) <= 1:
+    print("Error: Argument missing. Need one argument: The Task name \n")
+    exit()
+
 # Variables
-directory = 0
-list1 =[]
-list_name =[]
 directory_name = []
-nb_image = 0
-n_missing = 0
 nb_oar = np.zeros(len(dt.Label)-1)
 n_oar = len(dt.Label)
 
 # Travel through directory to get file list 
-rootDir = 'labelsTr/'
+rootDir = sys.argv[1] + '/labelsTr/'
 for dirName, subdirList, fileList in os.walk(rootDir):
-    directory += 1
     directory_name.append(dirName)
 
 fileList.sort()
-#print(fileList)
 
 # Dict to save the results 
 Volume = {'Number of image ': len(fileList)}
@@ -51,7 +48,6 @@ for i in range(len(fileList)):
 			mask_oar.fill(0)
 			mask = image_np==dt.Label[key]
 			mask_oar[mask] = 1
-			#print(dt.Label[key])
 			volume = np.sum(mask_oar != 0)*(0.1*image_itk.GetSpacing()[0]*0.1*image_itk.GetSpacing()[1]*0.1*image_itk.GetSpacing()[2])
 			dict_volume[key] = volume
 			#print("OAR :", key,  ", Surface :", dict_volume[key], " cm^3")
@@ -61,7 +57,7 @@ for i in range(len(fileList)):
 		print(i)
 
 # Save result to json 
-with open("result.json", 'w') as outfile:
+with open("volume_results.json", 'w') as outfile:
 	json.dump(Volume, outfile, indent=4)
 
 list_organs = []
@@ -86,12 +82,12 @@ for oar in range(0, len(list_organs)):
 # Plot histogramms for each OAR
 fig=plt.figure(figsize=(20, 15))
 for oar in range(1, n_oar):
-	plt.subplot(2, 6, oar)
+	plt.subplot(2, int(n_oar/2), oar)
 	plt.suptitle('Volume of Organs at risks in train set')
 	plt.hist(Vol[oar-1], label='N = %i \nMean = %.2f \nStd = %.2f'%(len(Vol[oar-1]), np.mean(Vol[oar-1]), np.std(Vol[oar-1])))
 	plt.title(list_organs[oar-1])
 	plt.xlabel('V ($cm^3$)', fontsize=8)
-	if oar == 1 or oar == 7:
+	if oar == 1 or oar == int((n_oar/2)+1):
 		plt.ylabel('dN/dV', fontsize=10)
 	plt.legend()
 plt.show()

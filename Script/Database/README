@@ -1,0 +1,4 @@
+set_database.py : set the database in the right format for nnU-Net 
+set_database_V2.py : set the database in the right format for nnU-Net with combining the Larynx and Trachea 
+dict_oar.py : dictionary of labels and OARs file names
+create_json.py : script to create json file need by nnU-Net 

@@ -70,6 +70,7 @@ images = []
 for i in range(len(fileList)):
 	images.append(fileList[i][:-7])
 
+# Calculation of volume for prediction 
 Volume_pred = volume_calculation(predictions, images)
 
 # Dict to save the results 
