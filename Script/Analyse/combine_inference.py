@@ -77,7 +77,7 @@ for image in range(Nb_images):
 	image_itk = itk.imread(prediction + list_images[image])
 	image_np = itk.array_view_from_image(image_itk)
 	esophagus = image_np==2
-	image_comb[larynxtrachea] = 7
+	image_comb[esophagus] = 7
 	
 	prediction = '/export/home/qchaine/nnUnet/nnUNet/nnUNet_trained_models/nnUNet/3d_fullres/Task528_SubMandibularGlands/nnUNetTrainerV2_noMirroring__nnUNetPlansv2.1/fold_0/Analyse/Predictions/'
 	image_itk = itk.imread(prediction + list_images[image])
