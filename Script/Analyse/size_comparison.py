@@ -46,8 +46,8 @@ def volume_calculation(directory, list_images):
 
 start_time = time.time()
 
-predictions = 'Predictions/'
-labels = 'Labels/'
+predictions = 'Predictions_combine/'
+labels = '/export/home/qchaine/Stage/Stage_CREATIS/Database_Test_sCT/Labels/'
 
 list_organs = []
 for key, value in dt.Label.items():
@@ -64,13 +64,13 @@ for dirName, subdirList, fileList in os.walk(predictions):
     directory_name.append(dirName)
 
 fileList.sort()
-fileList.remove('plans.pkl')
+if 'plans.pkl' in fileList:
+	fileList.remove('plans.pkl')
 
 images = []
 for i in range(len(fileList)):
 	images.append(fileList[i][:-7])
 
-# Calculation of volume for prediction 
 Volume_pred = volume_calculation(predictions, images)
 
 # Dict to save the results 
@@ -96,9 +96,9 @@ for i in range(len(images)):
 		print(i)
 
 # Save result to json 
-with open("result_pred.json", 'w') as outfile:
+with open("volume_prediction.json", 'w') as outfile:
 	json.dump(Volume_pred, outfile, indent=4)
-with open("result_label.json", 'w') as outfile:
+with open("volume_label.json", 'w') as outfile:
 	json.dump(Volume_label, outfile, indent=4)
 
 
@@ -131,8 +131,12 @@ for oar in range(0, len(list_organs)):
 	Ecart_vol.append(a)
 
 # Statistical t-test fo similarity of the samples 
+save = open("Results_test.txt", "w")
 for oar in range(0, len(list_organs)):
-	print("Organs :", list_organs[oar], "Test : ", stats.ttest_ind(Vol_pred[oar], Vol_label[oar], equal_var=False))
+	print(list_organs[oar], "Test : ", stats.ttest_ind(Vol_pred[oar], Vol_label[oar], equal_var=False))
+	save.write("%s Test : %s\n"%(list_organs[oar], stats.ttest_ind(Vol_pred[oar], Vol_label[oar], equal_var=False)))
+save.close()
+
 
 # Plot histogramms for each OAR
 fig=plt.figure(figsize=(20, 15))
@@ -143,7 +147,7 @@ for oar in range(1, len(list_organs)+1):
 	plt.hist(Vol_label[oar-1], label='Labels \nN = %i \nMean = %.2f \nStd = %.2f'%(len(Vol_label[oar-1]), np.mean(Vol_label[oar-1]), np.std(Vol_label[oar-1])), color='navy', alpha=0.5)
 	plt.title(list_organs[oar-1])
 	plt.xlabel('V ($cm^3$)', fontsize=8)
-	if oar == 1 or oar == 7:
+	if oar == 1 or oar == (int(len(list_organs)/2)+1):
 		plt.ylabel('dN/dV', fontsize=10)
 	plt.legend()
 plt.show()
@@ -158,7 +162,7 @@ for oar in range(1, len(list_organs)+1):
 	plt.hist(Ecart_vol[oar-1], label='N = %i \nMean = %.2f \nStd = %.2f'%(len(Ecart_vol[oar-1]), np.mean(Ecart_vol[oar-1]), np.std(Ecart_vol[oar-1])))
 	plt.title(list_organs[oar-1])
 	plt.xlabel('V ($cm^3$)', fontsize=8)
-	if oar == 1 or oar == 7:
+	if oar == 1 or oar == (int(len(list_organs)/2)+1):
 		plt.ylabel('dN/dV', fontsize=10)
 	plt.legend()
 plt.show()
@@ -173,7 +177,7 @@ for oar in range(1, len(list_organs)+1):
 	plt.hist(Vol_pred[oar-1], label='N = %i \nMean = %.2f \nStd = %.2f'%(len(Vol_pred[oar-1]), np.mean(Vol_pred[oar-1]), np.std(Vol_pred[oar-1])))
 	plt.title(list_organs[oar-1])
 	plt.xlabel('V ($cm^3$)', fontsize=8)
-	if oar == 1 or oar == 7:
+	if oar == 1 or oar == (int(len(list_organs)/2)+1):
 		plt.ylabel('dN/dV', fontsize=10)
 	plt.legend()
 plt.show()
@@ -188,7 +192,7 @@ for oar in range(1, len(list_organs)+1):
 	plt.hist(Vol_label[oar-1], label='N = %i \nMean = %.2f \nStd = %.2f'%(len(Vol_label[oar-1]), np.mean(Vol_label[oar-1]), np.std(Vol_label[oar-1])))
 	plt.title(list_organs[oar-1])
 	plt.xlabel('V ($cm^3$)', fontsize=8)
-	if oar == 1 or oar == 7:
+	if oar == 1 or oar == (int(len(list_organs)/2)+1):
 		plt.ylabel('dN/dV', fontsize=10)
 	plt.legend()
 plt.show()

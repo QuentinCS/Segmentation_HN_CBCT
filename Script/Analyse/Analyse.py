@@ -47,6 +47,9 @@ def count_eval (data):
 				Eval[i] += 1
 	return Eval
 
+
+
+
 start_time = time.time()
 
 # Get results from json file 
@@ -59,9 +62,15 @@ list_images = jsonObject['List images']
 list_organs = jsonObject['List Organs']
 Nb_organs = len(list_organs)
 
-list_oar = list_organs
-list_oar.remove('Patient')
-Nb_oar = len(list_oar)
+# To use all OAR in result.json use the 3 lines below
+#list_oar = list_organs
+#list_oar.remove('Patient')
+#Nb_oar = len(list_oar)
+
+# To use specific OAR use the 3 lines below
+Label = ['Parotide_D', 'Parotide_G', 'Tronc_Cerebral', 'Cavite_Buccale', 'Moelle', 'Oesophage', 'Thyroide', 'Mandibule', 'Larynx-Trachee', 'SubMandD', 'SubMandG', 'Oeil_D', 'Oeil_G']
+list_oar = Label
+Nb_oar = len(Label)
 
 
 print('Number of images :', Nb_images)
@@ -77,7 +86,7 @@ for i in range(0, Nb_images):
 	Images.append(jsonObject['Image%s'%(i)])
 
 	for oar in range(0, len(list_oar)):
-		if list_organs[oar] in Images[i]['Dice']:
+		if list_oar[oar] in Images[i]['Dice']:
 			Dice_raw[i][oar] = float(Images[i]['Dice']['%s'%(list_oar[oar])])
 			Hausdorff_raw[i][oar] = float(Images[i]['Hausdorff']['%s'%(list_oar[oar])])
 			
@@ -125,7 +134,7 @@ print("-------------------------------------------------------")
 
 
 # Boxplots for Dice and Hausdorff 
-fig = plt.figure(figsize=(20,15))
+fig = plt.figure(figsize=(20,10))
 #plt.subplot(1, 2, 1)
 plt.boxplot(Dice, labels=list_oar, showmeans=True)
 #plt.boxplot(Dice, labels=list_organs)
