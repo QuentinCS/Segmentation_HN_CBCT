@@ -2,3 +2,4 @@ List of scripts:
 
 read_pkl.py : script to read pkl file used by nnU-Net 
 verif_parotid.py : script to check if the parotids glands are not inversed 
+cc_check.py : script to check the numbers of connected component of the labels from the training dataset and print them 

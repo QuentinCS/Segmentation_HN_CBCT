@@ -2,10 +2,12 @@ List of files:
 
 get_result.py : calculate the Dice and Hausdorff coefficient and put result in json file
 get_result_V2.py : calculate the Dice Modified and Hausdorff coefficient and put result in json file
-Analyse.py : get the results from the json file and plot boxplots. Save in text file
 size_oar_trainset.py : compute the volume of OARs in the train set
 size_comparison.py : compute the volume of OARs for the reference and the inference, different plots of comparison 
 combine_oar.py : combine the larynx and trachea into one single label 'Larynx-Trachea'
 oat.py : dictionary for labels and OAR file names
 combine_inference.py : combine inferences for each OARs when trained separately
+Analyse.py : get the results from the json file and plot boxplots. Save in text file
 Analyse_patient.py : get result from json file and plot results for patient separately
+compare_CT_sCT.py : get the results from the json file for CT and sCT and compare it
+Analyse-5-fold.py : compare the results for 5-fold relative to 1 fold
