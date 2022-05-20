@@ -1,0 +1,3 @@
+List of scripts:
+
+combine_primary_scatter.py : script to combine primary and scatter projection, and reconstruc cbct with FDK
