@@ -50,9 +50,9 @@ size_scatter = int(get_size('mac/scatter-patient.mac'))
 factor = prim_per_proj*pow(size_primary/size_scatter,2)
 
 # Get list of projections 
-flatfield_proj = sorted(glob.glob('run*/output*/flatfield*.mha'))
-primary_proj = sorted(glob.glob('run*/output*/primary*.mha'))
-scatter_proj = sorted(glob.glob('run*/output*/secondary*.mha'))
+flatfield_proj = sorted(glob.glob('run*/output*/flatfield????.mha'))
+primary_proj = sorted(glob.glob('run*/output*/primary????.mha'))
+scatter_proj = sorted(glob.glob('run*/output*/secondary????.mha'))
 
 for i in range(0, len(primary_proj)):
 	flatfield = itk.imread(flatfield_proj[i])
@@ -72,7 +72,6 @@ for i in range(0, len(primary_proj)):
 	itk.imwrite(attenuation, f'{Dir}/attenuation_{i:04d}.mha')
 
 print("Projection combined!")
-# Reconstruct CBCT with FDK 
 
 # Create folder for saving the reconstruction
 dir_rec = 'reconstruct' 
@@ -80,6 +79,7 @@ if os.path.exists(dir_rec):
     shutil.rmtree(dir_rec)
 os.makedirs(dir_rec)
 
+# Reconstruct CBCT with FDK 
 print("Reconstruction ...")
 fdkcommand = f'rtkfdk -p {Dir} -r attenuation.*mha --pad=0.1 -o reconstruct/fdk.mha -g data/elektaGeometry.xml'
 os.system(fdkcommand)
