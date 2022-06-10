@@ -54,6 +54,9 @@ flatfield_proj = sorted(glob.glob('run*/output*/flatfield????.mha'))
 primary_proj = sorted(glob.glob('run*/output*/primary????.mha'))
 scatter_proj = sorted(glob.glob('run*/output*/secondary????.mha'))
 
+#print(len(primary_proj))
+#print(len(scatter_proj))
+
 for i in range(0, len(primary_proj)):
 	flatfield = itk.imread(flatfield_proj[i])
 	primary = itk.imread(primary_proj[i])
@@ -69,9 +72,12 @@ for i in range(0, len(primary_proj)):
 	full = itk.MultiplyImageFilter(full, itk.MedianImageFilter(flatfield))
 	attenuation = itk.LogImageFilter(full)
 	attenuation = itk.MultiplyImageFilter(attenuation, -1)
+	#print(numpy.mean(attenuation))
+	attenuation = itk.MultiplyImageFilter(attenuation, pow(2, 16))
 	itk.imwrite(attenuation, f'{Dir}/attenuation_{i:04d}.mha')
 
 print("Projection combined!")
+# Reconstruct CBCT with FDK 
 
 # Create folder for saving the reconstruction
 dir_rec = 'reconstruct' 
@@ -79,7 +85,6 @@ if os.path.exists(dir_rec):
     shutil.rmtree(dir_rec)
 os.makedirs(dir_rec)
 
-# Reconstruct CBCT with FDK 
 print("Reconstruction ...")
 fdkcommand = f'rtkfdk -p {Dir} -r attenuation.*mha --pad=0.1 -o reconstruct/fdk.mha -g data/elektaGeometry.xml'
 os.system(fdkcommand)
