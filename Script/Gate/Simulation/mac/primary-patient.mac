@@ -1,0 +1,110 @@
+#/control/execute mac/visu.mac
+/vis/disable
+#/tracking/storeTrajectory     1
+#/vis/scene/add/trajectories
+#/vis/scene/endOfEventAction   accumulate
+
+#/vis/scene/add/axes            0 0 0 1000 mm
+#/vis/scene/add/text            10 0 0 cm  20 0 0   X
+#/vis/scene/add/text            0 10 0 cm  20 0 0   Y
+#/vis/scene/add/text 		0 0 10 cm 20 0 0 Z
+
+/control/execute mac/verbose.mac
+
+/gate/geometry/setMaterialDatabase                 data/GateMaterials.db
+
+# World
+/gate/world/setMaterial            Air
+/gate/world/geometry/setXLength    5 m
+/gate/world/geometry/setYLength    5 m
+/gate/world/geometry/setZLength    5 m
+
+# Generate materials from Hounsfield units
+#/gate/HounsfieldMaterialGenerator/SetMaterialTable                  data/SimpleMaterialsTable.txt
+/gate/HounsfieldMaterialGenerator/SetMaterialTable                  data/Schneider2000MaterialsTable.txt
+/gate/HounsfieldMaterialGenerator/SetDensityTable                   data/Schneider2000DensitiesTable.txt
+/gate/HounsfieldMaterialGenerator/SetDensityTolerance               0.01 g/cm3
+/gate/HounsfieldMaterialGenerator/SetOutputMaterialDatabaseFilename data/patient-HUmaterials.db
+/gate/HounsfieldMaterialGenerator/SetOutputHUMaterialFilename       data/patient-HU2mat.txt
+/gate/HounsfieldMaterialGenerator/Generate
+
+# Rotation
+/gate/world/daughters/name                      patient
+/gate/world/daughters/insert                    ImageNestedParametrisedVolume
+/gate/geometry/setMaterialDatabase              data/patient-HUmaterials.db
+/gate/patient/geometry/setHUToMaterialFile      data/patient-HU2mat.txt
+/gate/patient/geometry/setImage                 data/CT_rotated.mha
+
+# optional : dump used image
+/gate/patient/geometry/buildAndDumpLabeledImage  data/patient_th-labeled-NPV.mhd
+/gate/patient/geometry/TranslateTheImageAtThisIsoCenter 0 0 0 mm
+
+# Physics list
+/gate/physics/addPhysicsList emlivermore
+/gate/physics/Gamma/SetCutInRegion      world 1 mm
+/gate/physics/Electron/SetCutInRegion   world 1 mm
+/gate/physics/Positron/SetCutInRegion   world 1 mm
+
+/gate/physics/Gamma/SetCutInRegion      patient 0.5 mm
+/gate/physics/Electron/SetCutInRegion   patient 0.5 mm
+/gate/physics/Positron/SetCutInRegion   patient 0.5 mm
+
+/gate/physics/SetMaxStepSizeInRegion    patient 0.1 mm
+
+/gate/physics/displayCuts
+/gate/physics/print output/physics.txt
+
+# Detection plane
+/gate/world/daughters/name                   DetectorPlane
+/gate/world/daughters/insert                 box
+/gate/DetectorPlane/geometry/setXLength      409.6 mm
+/gate/DetectorPlane/geometry/setYLength      409.6 mm
+/gate/DetectorPlane/geometry/setZLength      1 nm
+/gate/DetectorPlane/placement/setTranslation 0 0 -536 mm
+/gate/DetectorPlane/setMaterial              Vacuum
+/gate/DetectorPlane/vis/setVisible           1
+/gate/DetectorPlane/vis/setColor             yellow
+
+# Fluence of gamma
+/gate/actor/addActor FixedForcedDetectionActor ffda
+/gate/actor/ffda/attachTo                     world
+/gate/actor/ffda/setDetector                  DetectorPlane
+/gate/actor/ffda/setDetectorResolution        512 512
+/gate/actor/ffda/primaryFilename              output/primary%04d.mha
+/gate/actor/ffda/flatFieldFilename            output/flatfield%04d.mha
+/gate/actor/ffda/responseDetectorFilename     data/responseDetector.txt
+/gate/actor/ffda/energyResolvedBinSize        0 keV
+/gate/actor/ffda/setInputRTKGeometryFilename  data/elektaGeometry.xml 
+# Save particles stats
+/gate/actor/addActor  SimulationStatisticActor stat
+/gate/actor/stat/save output/stats.txt
+
+/gate/run/initialize
+
+# Beam
+/gate/source/addSource mybeam gps
+/gate/source/mybeam/gps/particle       gamma
+/gate/source/mybeam/gps/ene/type       User
+/gate/source/mybeam/gps/hist/type      energy
+/gate/source/mybeam/gps/pos/halfx      8 mm
+/gate/source/mybeam/gps/pos/halfy      8 mm
+/gate/source/mybeam/gps/pos/rot1       1 0 0
+/gate/source/mybeam/gps/pos/rot2       0 1 0
+/gate/source/mybeam/gps/pos/centre     0 0 1060 mm
+/gate/source/mybeam/gps/pos/type       Plane
+/gate/source/mybeam/gps/pos/shape      Rectangle
+/gate/source/mybeam/gps/ang/type       focused
+/gate/source/mybeam/gps/ang/focuspoint 0 0 1000 mm
+
+/control/execute mac/100kV.mac
+
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+
+/gate/application/setTimeSlice 1 ns
+/gate/application/setTimeStart 0 ns
+/gate/application/setTimeStop 194 ns
+
+/gate/application/setTotalNumberOfPrimaries 194
+/gate/application/start
+
