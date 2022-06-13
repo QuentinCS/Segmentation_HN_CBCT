@@ -77,17 +77,22 @@ for i in range(0, len(primary_proj)):
 	itk.imwrite(attenuation, f'{Dir}/attenuation_{i:04d}.mha')
 
 print("Projection combined!")
-# Reconstruct CBCT with FDK 
 
 # Create folder for saving the reconstruction
 dir_rec = 'reconstruct' 
 if os.path.exists(dir_rec):
     shutil.rmtree(dir_rec)
 os.makedirs(dir_rec)
-
 print("Reconstruction ...")
+
+# Reconstruct CBCT with FDK 
 fdkcommand = f'rtkfdk -p {Dir} -r attenuation.*mha --pad=0.1 -o reconstruct/fdk.mha -g data/elektaGeometry.xml'
 os.system(fdkcommand)
+
+# Rotation back to the CT geometry 
+rotatecommand = f'clitkAffineTransform -i reconstruct/fdk.mha -o reconstruct/fdk_rotated.mha -m data/matriceRTK2CBCT.mat --pad=0 --transform_grid'
+os.system(rotatecommand)
+
 
 duree = time.time() - start_time
 print ('\n \nTotal running time : %5.3g s' % duree)
