@@ -1,0 +1,111 @@
+// This parameter file has kind of realistic values.
+// In most other parameter files for testing, the number of samples and iterations is rather low, to allow fast testing.
+
+// ********** Image Types
+
+(FixedInternalImagePixelType "float")
+(FixedImageDimension 3)
+(MovingInternalImagePixelType "float")
+(MovingImageDimension 3)
+
+
+// ********** Components
+
+(Registration "MultiResolutionRegistration")
+(FixedImagePyramid "FixedSmoothingImagePyramid")
+(MovingImagePyramid "MovingSmoothingImagePyramid")
+(Interpolator "BSplineInterpolator")
+(Metric "AdvancedMattesMutualInformation")
+(Optimizer "AdaptiveStochasticGradientDescent")
+(ResampleInterpolator "FinalBSplineInterpolator")
+(Resampler "DefaultResampler")
+(Transform "AffineTransform")
+
+
+// ********** Pyramid
+
+// Total number of resolutions
+(NumberOfResolutions 5)
+(ImagePyramidSchedule 16 16 8 8 8 4 4 4 2 2 2 2 1 1 1)
+
+
+// ********** Transform
+
+(FinalGridSpacingInPhysicalUnits 12)
+(GridSpacingSchedule 16 8 4 2 1)
+(UseCyclicTransform "false")
+(AutomaticScalesEstimation "true")
+(AutomaticTransformInitialization "true")
+(HowToCombineTransforms "Compose")
+
+
+// ********** Optimizer
+
+// Maximum number of iterations in each resolution level:
+(MaximumNumberOfIterations 2000)
+
+(FixedLimitRangeRatio 0.01)
+(MovingLimitRangeRatio 0.01)
+(FixedKernelBSplineOrder 0)
+(MovingKernelBSplineOrder 3)
+(UseFastAndLowMemoryVersion "true")
+(UseJacobianPreconditioning "false")
+(FiniteDifferenceDerivative "false")
+(SP_A 20)
+(SigmoidInitialTime 0)
+(MaxBandCovSize 192)
+(NumberOfBandStructureSamples 10)
+(MaximumStepLength 0.976562)
+(NumberOfGradientMeasurements 0)
+(NumberOfJacobianMeasurements 1000)
+(NumberOfSamplesForExactGradient 100000)
+(SigmoidScaleFactor 0.1)
+(ASGDParameterEstimationMethod "Original")
+
+
+(AutomaticParameterEstimation "true")
+(UseAdaptiveStepSizes "true")
+
+
+// ********** Metric
+(NumberOfHistogramBins 64)
+(NumberOfFixedHistogramBins 64)
+(NumberOfMovingHistogramBins 64)
+(CheckNumberOfSamples true)
+
+
+// ********** Several
+
+(WriteTransformParametersEachIteration "false")
+(WriteTransformParametersEachResolution "true")
+(WriteResultImageAfterEachResolution "false")
+(WriteResultImage "true")
+(ShowExactMetricValue "false")
+(ErodeMask "false")
+(UseDirectionCosines "true")
+(WriteDVFFromCoeff "true")
+(ResultImageFormat "mhd")
+
+
+// ********** ImageSampler
+
+//Number of spatial samples used to compute the mutual information in each resolution level:
+(ImageSampler "RandomCoordinate")
+(NumberOfSpatialSamples 2000)
+(NewSamplesEveryIteration "true")
+(UseRandomSampleRegion "false")
+(MaximumNumberOfSamplingAttempts 5)
+
+
+// ********** Interpolator and Resampler
+
+//Order of B-Spline interpolation used in each resolution level:
+(FixedImageBSplineInterpolationOrder 1)
+(BSplineInterpolationOrder 1)
+
+//Order of B-Spline interpolation used for applying the final deformation:
+(FinalBSplineInterpolationOrder 3)
+
+//Default pixel value for pixels that come from outside the picture:
+(DefaultPixelValue 0)
+
