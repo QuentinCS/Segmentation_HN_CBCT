@@ -17,7 +17,6 @@ Nb_start = 0
 for patient in patients:
 
 	files = (glob.glob(f'{patient}/*'))
-	print(files)
 	if len(files) == 3:
 		Nb_start += 1
 	if len(files) != 3:
