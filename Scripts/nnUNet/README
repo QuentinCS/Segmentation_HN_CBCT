@@ -1,0 +1,5 @@
+Script for nnunet:
+
+create_json.py: create json file for the dataset needed by nnunet
+nnUNetPlans_v.py: example of a plan file creator (.pkl) 
+train.slurm: example script to train networks on Jean Zay
