@@ -50,7 +50,7 @@ def define_box_properties(plot_name, color_code, label):
 start_time = time.time()
 
 # Get results from json file for CT
-with open("/export/home/qchaine/Stage/Stage_CREATIS/Jean_zay/Separated_organs/CT_sCT/Analyse/Full/result_sCT_full.json") as jsonFile:
+with open("/export/home/qchaine/Stage/Jean_zay/Separated_organs/CT_sCT/Analyse/Full/result_sCT_full.json") as jsonFile:
     jsonObject_sCT = json.load(jsonFile)
     jsonFile.close()
 

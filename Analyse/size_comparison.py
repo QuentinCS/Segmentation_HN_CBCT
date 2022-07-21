@@ -47,7 +47,7 @@ def volume_calculation(directory, list_images):
 start_time = time.time()
 
 predictions = 'Predictions_combine/'
-labels = '/export/home/qchaine/Stage/Stage_CREATIS/Database_Test_sCT/Labels/'
+labels = '/export/home/qchaine/Stage/Database_Test_sCT/Labels/'
 
 list_organs = []
 for key, value in dt.Label.items():

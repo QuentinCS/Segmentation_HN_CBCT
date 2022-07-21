@@ -103,11 +103,11 @@ start_time = time.time()
 list_roi = []
 directory_name = []
 # Travel through directory to get file list of OARs for each images
-roiDir = '/export/home/qchaine/Stage/Stage_CREATIS/Database_Test_sCT/sCT/Labels'
+roiDir = '/export/home/qchaine/Stage/Database_Test_sCT/sCT/Labels'
 for dirName, subdirList, fileList in os.walk(roiDir):
     list_roi.append(fileList)
     directory_name.append(dirName)
-directory_name.remove('/export/home/qchaine/Stage/Stage_CREATIS/Database_Test_sCT/sCT/Labels')
+directory_name.remove('/export/home/qchaine/Stage/Database_Test_sCT/sCT/Labels')
 
 # Travel through directory to get file list of predictions
 image_predict = []

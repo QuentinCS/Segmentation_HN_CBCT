@@ -39,7 +39,7 @@ os.makedirs(Pred)
 directory_name = []
 list_images = []
 # Travel through directory to get file list 
-rootDir = '/export/home/qchaine/Stage/Stage_CREATIS/Database_Test_sCT/CT/CT/'
+rootDir = '/export/home/qchaine/Stage/Database_Test_sCT/CT/CT/'
 #rootDir = 'Labels/'
 for dirName, subdirList, fileList in os.walk(rootDir):
 		directory_name.append(dirName)
