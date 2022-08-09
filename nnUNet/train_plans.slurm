@@ -5,9 +5,9 @@
 #SBATCH --cpus-per-task=10           # nombre de coeurs CPU par tache (1/4 du noeud 4-GPU)
 # /!\ Attention, "multithread" fait reference à l'hyperthreading dans la terminologie Slurm
 #SBATCH --hint=nomultithread         # hyperthreading desactive
-#SBATCH --time=10:00:00              # temps maximum d'execution demande (HH:MM:SS)
-#SBATCH --output=gpu_mono_TaskXXX_f0_%j.out      # nom du fichier de sortie
-#SBATCH --error=gpu_mono_TaskXXX_f0_%j.out       # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --time=20:00:00              # temps maximum d'execution demande (HH:MM:SS)
+#SBATCH --output=gpu_mono_TaskXXX_3df_f0_%j.out      # nom du fichier de sortie
+#SBATCH --error=gpu_mono_TaskXXX_3df_f0_%j.out       # nom du fichier d'erreur (ici commun avec la sortie)
 
 #Run this job with
 # sbatch runTest.slurm
@@ -36,10 +36,10 @@ export nnUNet_raw_data_base="/gpfsscratch/rech/ddr/uyx67dp/nnUNet/nnUNet_raw_dat
 export nnUNet_preprocessed="/gpfsscratch/rech/ddr/uyx67dp/nnUNet/nnUNet_preprocessed"
 export RESULTS_FOLDER="/gpfsscratch/rech/ddr/uyx67dp/nnUNet/nnUNet_trained_models"
 
-# Execute your code 
+# Execute your code
 nnUNet_plan_and_preprocess -t XXX --verify_dataset_integrity
-nnUNet_train 3d_fullres nnUNetTrainerV2_noMirroring XXX 0 --npz
-
+python nnUNetPlans_v3.py
+nnUNet_train 3d_fullres nnUNetTrainerV2_noMirroring XXX 0 -p nnUNetPlans_v3 --npz
 
 echo
 END_TIME=$(date +%s)
